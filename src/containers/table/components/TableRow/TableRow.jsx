@@ -4,7 +4,15 @@ import ContextMenu from "../ContextMenu/ContextMenu";
 import { useTableRow } from "./state/useTableRow";
 import { transformDate } from "../../../newProduct/components/state/useForm";
 
-const TableRow = ({ logo, name, description, releaseDate, reviewDate }) => {
+const TableRow = ({
+  id,
+  logo,
+  name,
+  description,
+  releaseDate,
+  reviewDate,
+  onDelete,
+}) => {
   const { functions, values } = useTableRow();
 
   return (
@@ -26,7 +34,22 @@ const TableRow = ({ logo, name, description, releaseDate, reviewDate }) => {
           style={{ width: "20px" }}
         />
       </div>
-      {values.showOptions && <ContextMenu />}
+      {values.showOptions && (
+        <ContextMenu
+          product={{
+            id,
+            logo,
+            name,
+            description,
+            releaseDate,
+            reviewDate,
+          }}
+          onDelete={() => {
+            functions.toggleShowOptions();
+            onDelete(encodeURIComponent(id));
+          }}
+        />
+      )}
     </div>
   );
 };

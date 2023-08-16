@@ -7,7 +7,7 @@ import { TableStyles } from "./Table.styles";
 import { useTable } from "./state/useTable";
 
 const Table = () => {
-  const { values } = useTable();
+  const { functions, values } = useTable();
 
   return (
     <>
@@ -22,14 +22,16 @@ const Table = () => {
         <div style={TableStyles.table}>
           <div style={TableStyles.tableRows}>
             <TableHeader />
-            {values.data.map((value) => (
+            {values.data.slice(0, values.pagination).map((value) => (
               <TableRow
                 key={value.id}
+                id={value.id}
                 logo={value.logo}
                 name={value.name}
                 description={value.description}
                 releaseDate={value.date_release}
                 reviewDate={value.date_revision}
+                onDelete={functions.handleDelete}
               />
             ))}
           </div>
@@ -38,7 +40,13 @@ const Table = () => {
               {values.data.length} resultados
             </div>
             <div>
-              <select style={TableStyles.tablePaginanation} name="" id="">
+              <select
+                style={TableStyles.tablePaginanation}
+                name="paginacion"
+                onChange={functions.handleChange}
+                value={values.pagination}
+              >
+                <option value="1">1</option>
                 <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="20">20</option>

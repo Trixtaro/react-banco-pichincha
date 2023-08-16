@@ -32,6 +32,7 @@ const Form = () => {
               pattern={".{3,10}"}
               validationMessage={"ID no válido"}
               forceValid={!values.invalidId}
+              disabled={values.disabledId}
               required
             />
           </div>

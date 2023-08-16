@@ -11,6 +11,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Table />} />
           <Route path="/nuevo-producto" element={<NewProduct />} />
+          <Route path="/editar-producto/:id" element={<NewProduct />} />
         </Routes>
       </BrowserRouter>
     </div>
