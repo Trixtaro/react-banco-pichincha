@@ -1,0 +1,7 @@
+.yellow-button {
+  background-color: #ffdd00;
+}
+
+.yellow-button:disabled {
+  background-color: #f1e8af;
+}
