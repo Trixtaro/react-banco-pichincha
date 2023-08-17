@@ -1,5 +1,5 @@
-import { act, renderHook } from "@testing-library/react";
-import { transformDate, useForm } from "./useForm";
+import { act, render, renderHook } from "@testing-library/react";
+import { transformDate, getTwoDigitsNumber, useForm } from "./useForm";
 import Router, { MemoryRouter } from "react-router-dom";
 
 const mockedNavigate = jest.fn();
@@ -9,6 +9,13 @@ jest.mock("react-router-dom", () => ({
   useNavigate: () => mockedNavigate,
   useParams: jest.fn(),
 }));
+
+describe("getTwoDigitsNumber", () => {
+  it("should return two digits", () => {
+    expect(getTwoDigitsNumber(9)).toBe("09");
+    expect(getTwoDigitsNumber(10)).toBe("10");
+  });
+});
 
 describe("transformDate", () => {
   it("should transformDate convert date into string", () => {
@@ -52,6 +59,12 @@ describe("useForm", () => {
   });
 
   it("should change values when onChange function is called", () => {
+    jest.spyOn(global, "fetch").mockImplementationOnce(() => ({
+      status: 200,
+      json: () => Promise.resolve({}),
+      text: () => Promise.resolve(""),
+    }));
+
     const { result, rerender } = renderHook(() => useForm(), {
       wrapper,
     });
@@ -70,6 +83,10 @@ describe("useForm", () => {
       {
         name: "fecha_liberacion",
         value: "2010-10-22",
+      },
+      {
+        name: "random name",
+        value: "random value",
       },
     ].forEach((values) => {
       act(() => {
@@ -104,10 +121,24 @@ describe("useForm", () => {
   });
 
   it("should saveProducts return an error status", async () => {
-    jest.spyOn(global, "fetch").mockImplementationOnce(() => ({
+    jest.spyOn(global, "fetch").mockImplementation(() => ({
       status: 400,
       json: Promise.resolve({}),
     }));
+
+    const { result } = renderHook(() => useForm(), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.functions.saveProducts();
+    });
+
+    expect(mockedNavigate).not.toHaveBeenCalled();
+  });
+
+  it("should saveProducts throw an error", async () => {
+    jest.spyOn(global, "fetch").mockImplementation(() => Promise.reject({}));
 
     const { result } = renderHook(() => useForm(), {
       wrapper,
@@ -145,5 +176,200 @@ describe("useForm", () => {
     });
 
     expect(mockedNavigate).toHaveBeenCalled();
+  });
+
+  it("should updateProduct return a 400 status", async () => {
+    jest.spyOn(global, "fetch").mockImplementationOnce(() => ({
+      status: 400,
+      json: Promise.resolve({}),
+    }));
+
+    jest.spyOn(Router, "useParams").mockReturnValue({
+      id: "abc",
+    });
+
+    const { result, rerender } = renderHook(() => useForm(), {
+      wrapper,
+    });
+
+    rerender();
+
+    expect(result.current.values.mode).toBe("edit");
+
+    await act(async () => {
+      await result.current.functions.handleSubmit({
+        preventDefault: jest.fn(),
+      });
+    });
+
+    expect(mockedNavigate).not.toHaveBeenCalled();
+  });
+
+  it("should updateProduct throw an error", async () => {
+    jest
+      .spyOn(global, "fetch")
+      .mockImplementationOnce(() => Promise.reject({}));
+
+    jest.spyOn(Router, "useParams").mockReturnValue({
+      id: "abc",
+    });
+
+    const { result, rerender } = renderHook(() => useForm(), {
+      wrapper,
+    });
+
+    rerender();
+
+    expect(result.current.values.mode).toBe("edit");
+
+    await act(async () => {
+      await result.current.functions.handleSubmit({
+        preventDefault: jest.fn(),
+      });
+    });
+
+    expect(mockedNavigate).not.toHaveBeenCalled();
+  });
+
+  it("should validateId finish if id length is less than 3", () => {
+    const spy = jest.spyOn(global, "fetch");
+    jest.spyOn(Router, "useParams").mockReturnValue({});
+
+    const { result } = renderHook(() => useForm(), {
+      wrapper,
+    });
+
+    result.current.functions.validateId("a1");
+
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it("should validateId continue if id length is 3 or greater when id is invalid", async () => {
+    const spy = jest.spyOn(global, "fetch").mockImplementationOnce(() => ({
+      status: 200,
+      text: () => Promise.resolve("true"),
+    }));
+    jest.spyOn(Router, "useParams").mockReturnValue({});
+
+    const { result } = renderHook(() => useForm(), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.functions.validateId("aaa111");
+    });
+
+    expect(result.current.values.invalidId).toBe(true);
+
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it("should validateId continue if id length is 3 or greater when id is valid", async () => {
+    const spy = jest.spyOn(global, "fetch").mockImplementationOnce(() => ({
+      status: 200,
+      text: () => Promise.resolve("false"),
+    }));
+    jest.spyOn(Router, "useParams").mockReturnValue({});
+
+    const { result } = renderHook(() => useForm(), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.functions.validateId("aaa111");
+    });
+
+    expect(result.current.values.invalidId).toBe(false);
+
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it("should validateId continue if id length is 3 or greater when we get an error", async () => {
+    jest
+      .spyOn(global, "fetch")
+      .mockImplementationOnce(() => Promise.reject({}));
+    jest.spyOn(Router, "useParams").mockReturnValue({});
+
+    const { result } = renderHook(() => useForm(), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.functions.validateId("aaa111");
+    });
+  });
+
+  it("should set values from location state when is in edit mode", () => {
+    jest.spyOn(Router, "useParams").mockReturnValue({
+      id: "random_id_1",
+    });
+    jest.spyOn(Router, "useLocation").mockReturnValue({
+      state: {
+        name: "a name",
+        description: "a description",
+        logo: "a logo URL",
+        releaseDate: new Date("2023-10-10"),
+        reviewDate: new Date("2024-10-10"),
+      },
+    });
+
+    const { result, rerender } = renderHook(() => useForm(), {
+      wrapper,
+    });
+
+    rerender();
+
+    expect(result.current.values.name).toBe("a name");
+    expect(result.current.values.description).toBe("a description");
+    expect(result.current.values.logo).toBe("a logo URL");
+    expect(result.current.values.releaseDate).toBe("2023-10-09");
+    expect(result.current.values.reviewDate).toBe("2024-10-09");
+  });
+
+  it("should handleSubmit saveProducts when is in new mode", () => {
+    jest.spyOn(global, "fetch").mockImplementationOnce(() => ({
+      status: 200,
+      json: Promise.resolve({}),
+    }));
+    jest.spyOn(Router, "useLocation").mockReturnValue({
+      state: null,
+    });
+    jest.spyOn(Router, "useParams").mockReturnValue({});
+
+    const { result } = renderHook(() => useForm(), { wrapper });
+
+    act(() => {
+      result.current.functions.handleSubmit({ preventDefault: jest.fn() });
+    });
+
+    expect(result.current.values.mode).toBe("new");
+  });
+
+  it("should handleSubmit saveProducts when is in edit mode", () => {
+    jest.spyOn(global, "fetch").mockImplementationOnce(() => ({
+      status: 200,
+      json: Promise.resolve({}),
+    }));
+    jest.spyOn(Router, "useLocation").mockReturnValue({
+      state: {
+        name: "a name",
+        description: "a description",
+        logo: "a logo URL",
+        releaseDate: new Date("2023-10-10"),
+        reviewDate: new Date("2024-10-10"),
+      },
+    });
+
+    jest.spyOn(Router, "useParams").mockReturnValue({
+      id: "abc123",
+    });
+
+    const { result } = renderHook(() => useForm(), { wrapper });
+
+    act(() => {
+      result.current.functions.handleSubmit({ preventDefault: jest.fn() });
+    });
+
+    expect(result.current.values.mode).toBe("edit");
   });
 });

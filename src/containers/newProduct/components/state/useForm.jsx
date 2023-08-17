@@ -6,10 +6,14 @@ import {
   fetchValidateId,
 } from "../../../../infrastructure/endpoints";
 
+export const getTwoDigitsNumber = (num) => {
+  return num < 10 ? `0${num}` : `${num}`;
+};
+
 export const transformDate = (date) => {
-  return `${date.getFullYear()}-${
-    date.getMonth() + 1 < 10 ? `0${date.getMonth() + 1}` : date.getMonth() + 1
-  }-${date.getDate() < 10 ? `0${date.getDate()}` : date.getDate()}`;
+  return `${date.getFullYear()}-${getTwoDigitsNumber(
+    date.getMonth() + 1
+  )}-${getTwoDigitsNumber(date.getDate())}`;
 };
 
 export const useForm = () => {
@@ -57,11 +61,9 @@ export const useForm = () => {
         break;
       case "fecha_liberacion":
         const newDate = new Date(
-          `${e.target.value}T${
-            new Date().getHours() < 10
-              ? `0${new Date().getHours()}`
-              : new Date().getHours()
-          }:00:00.000Z`
+          `${e.target.value}T${getTwoDigitsNumber(
+            new Date().getHours()
+          )}:00:00.000Z`
         );
 
         // la nueva fecha no puede ser menor a la fecha actual
@@ -171,7 +173,6 @@ export const useForm = () => {
   };
 
   useEffect(() => {
-    console.log(params);
     if (params.id) {
       setMode("edit");
 
@@ -207,6 +208,7 @@ export const useForm = () => {
       handleRestart,
       handleSubmit,
       saveProducts,
+      validateId,
     },
   };
 };

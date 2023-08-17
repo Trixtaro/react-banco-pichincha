@@ -1,10 +1,15 @@
 import { useState } from "react";
 
-export const useTableRow = () => {
+export const useTableRow = (id, onDelete) => {
   const [showOptions, setShowOptions] = useState(false);
 
   const toggleShowOptions = () => {
     setShowOptions(!showOptions);
+  };
+
+  const handleDelete = () => {
+    toggleShowOptions();
+    onDelete(encodeURIComponent(id));
   };
 
   return {
@@ -13,6 +18,7 @@ export const useTableRow = () => {
     },
     functions: {
       toggleShowOptions,
+      handleDelete,
     },
   };
 };

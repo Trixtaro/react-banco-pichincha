@@ -15,18 +15,16 @@ export const useTable = () => {
 
       setData(data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
   const deleteProduct = async (id) => {
     try {
-      const response = await fetchDeleteProduct(id);
+      await fetchDeleteProduct(id);
 
-      if (response.status === 200) fetchProducts();
-    } catch (error) {
-      console.log(error);
-    }
+      fetchProducts();
+    } catch (error) {}
   };
 
   const handleChange = (e) => {
@@ -55,6 +53,7 @@ export const useTable = () => {
     },
     functions: {
       fetchProducts,
+      deleteProduct,
       handleDelete,
       handleChange,
     },

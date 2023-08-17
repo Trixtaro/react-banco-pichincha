@@ -13,7 +13,7 @@ const TableRow = ({
   reviewDate,
   onDelete,
 }) => {
-  const { functions, values } = useTableRow();
+  const { functions, values } = useTableRow(id, onDelete);
 
   return (
     <div style={TableRowStyles.tableRow}>
@@ -44,10 +44,7 @@ const TableRow = ({
             releaseDate,
             reviewDate,
           }}
-          onDelete={() => {
-            functions.toggleShowOptions();
-            onDelete(encodeURIComponent(id));
-          }}
+          onDelete={functions.handleDelete}
         />
       )}
     </div>
