@@ -21,7 +21,7 @@ const Input = ({
   const handleChange = (e) => {
     const valid = e.target.validity.valid;
     setValid(valid);
-    if (onChange) onChange(e, valid);
+    onChange(e, valid);
   };
 
   return (
@@ -43,9 +43,6 @@ const Input = ({
           ...styles,
         }}
         pattern={pattern}
-        onInvalid={(e) => {
-          e.preventDefault();
-        }}
         required={required}
         disabled={disabled}
       />

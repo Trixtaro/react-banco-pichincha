@@ -53,7 +53,6 @@ export const useForm = () => {
         setDescription(e.target.value);
         break;
       case "logo":
-        console.log(e.target.value);
         setLogo(e.target.value);
         break;
       case "fecha_liberacion":
@@ -172,6 +171,7 @@ export const useForm = () => {
   };
 
   useEffect(() => {
+    console.log(params);
     if (params.id) {
       setMode("edit");
 
@@ -198,6 +198,9 @@ export const useForm = () => {
       validForm: allFieldsAreValid(),
       mode,
       disabledId: mode === "edit",
+      navigate,
+      location,
+      params,
     },
     functions: {
       handleChange,

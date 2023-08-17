@@ -6,7 +6,7 @@ import NewProduct from "./containers/newProduct/NewProduct";
 
 function App() {
   return (
-    <div className="App">
+    <div data-testid="App" className="App">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Table />} />
